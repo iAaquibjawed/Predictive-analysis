@@ -87,3 +87,5 @@ group :development do
   gem "bullet"
 end
 
+# Active Storage for file uploads
+gem "image_processing", "~> 1.2"
