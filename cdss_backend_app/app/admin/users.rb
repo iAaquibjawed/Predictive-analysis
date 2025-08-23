@@ -16,7 +16,6 @@ ActiveAdmin.register User do
   scope :all, default: true
   scope :active
   scope :doctors
-  scope :patients_users, name: "Patients"
   scope("Pharmacists") { |scope| scope.where(role: :pharmacist) }
 
   # Index
