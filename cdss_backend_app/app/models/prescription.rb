@@ -1,0 +1,49 @@
+class Prescription < ApplicationRecord
+  belongs_to :patient
+  belongs_to :prescribing_doctor, class_name: 'User'
+  has_many :prescription_drugs, dependent: :destroy
+  has_many :drugs, through: :prescription_drugs
+  has_many :iot_readings, dependent: :destroy
+
+  enum status: { pending: 0, active: 1, completed: 2, cancelled: 3 }
+
+  validates :prescription_date, presence: true
+  validates :status, presence: true
+  validates :prescribing_doctor, inclusion: { in: proc { User.where(role: [:doctor, :admin]) } }
+
+  scope :for_patient, ->(patient_id) { where(patient_id: patient_id) }
+  scope :by_doctor, ->(doctor_id) { where(prescribing_doctor_id: doctor_id) }
+  scope :recent, -> { where(prescription_date: 30.days.ago..Time.current) }
+
+  # Ransack searchable attributes
+  def self.ransackable_attributes(auth_object = nil)
+    [
+      "created_at", "id", "notes", "patient_id",
+      "prescription_date", "prescribing_doctor_id", "status", "updated_at"
+    ]
+  end
+
+  def self.ransackable_associations(auth_object = nil)
+    [
+      "patient", "prescribing_doctor", "prescription_drugs",
+      "drugs", "iot_readings"
+    ]
+  end
+
+  def adherence_percentage
+    return 0 unless iot_readings.any?
+
+    expected_doses = calculate_expected_doses
+    actual_doses = iot_readings.where(event_type: 'dose_taken').count
+
+    return 100 if expected_doses.zero?
+    [(actual_doses.to_f / expected_doses * 100).round(2), 100].min
+  end
+
+  private
+
+  def calculate_expected_doses
+    days_active = (Time.current.to_date - prescription_date.to_date).to_i
+    prescription_drugs.sum { |pd| (pd.daily_frequency || 1) * days_active }
+  end
+end
