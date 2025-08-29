@@ -1,0 +1,8 @@
+{
+  "built_at": "2025-08-19T20:37:09.415067Z",
+  "num_docs": 2066,
+  "num_terms": 3420,
+  "notes": "Lightweight TF-IDF recommender artifacts",
+  "source": "PostgreSQL: drugs table",
+  "script": "/home/u2748181/Documents/clinical_engine_backend /clinical_engine_backend_code/scripts/train_tfidf_recommender.py"
+}
