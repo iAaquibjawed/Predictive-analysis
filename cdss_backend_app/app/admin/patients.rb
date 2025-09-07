@@ -2,8 +2,8 @@ ActiveAdmin.register Patient do
   menu parent: "Clinical Management", priority: 1
 
   permit_params :nhs_number, :date_of_birth, :gender, :address, :phone_number,
-                :emergency_contact, :medical_history, :allergies,
-                user_attributes: [:id, :first_name, :last_name, :email]
+                :emergency_contact, :medical_history, :allergies, :doctor_id,
+                patient: [:id, :first_name, :last_name, :email]
 
   # Scopes for filtering
   scope :all, default: true
@@ -37,6 +37,13 @@ ActiveAdmin.register Patient do
     column "Last Medical Record" do |patient|
       patient.medical_records&.recent&.first&.visit_date&.strftime("%d/%m/%Y") || "No records"
     end
+    column :doctor do |patient|
+      if patient.doctor
+        link_to patient.doctor.name, admin_doctor_path(patient.doctor)
+      else
+        status_tag "Unassigned", :warning
+      end
+    end
     column :created_at
     actions
   end
@@ -55,6 +62,13 @@ ActiveAdmin.register Patient do
       row :address
       row :phone_number
       row :emergency_contact
+      row :doctor do |patient|
+        if patient.doctor
+          link_to patient.doctor.name, admin_doctor_path(patient.doctor)
+        else
+          status_tag "Unassigned", :warning
+        end
+      end
       row :medical_history
       row :allergies
       row :created_at
@@ -104,11 +118,14 @@ ActiveAdmin.register Patient do
   # Form
   form do |f|
     f.inputs "Patient Information" do
-      f.has_many :user, heading: "Personal Details", allow_destroy: false do |user_form|
-        user_form.input :first_name
-        user_form.input :last_name
-        user_form.input :email
+      f.inputs "User Details" do
+        f.semantic_fields_for :user do |user_form|
+          user_form.input :first_name, required: true
+          user_form.input :last_name, required: true
+          user_form.input :email, required: true
+        end
       end
+      f.input :doctor, as: :select, collection: Doctor.all.collect { |d| [d.name, d.id] }, include_blank: "Unassigned"
 
       f.input :nhs_number, hint: "10-digit NHS number"
       f.input :date_of_birth, as: :date_picker

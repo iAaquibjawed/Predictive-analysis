@@ -5,6 +5,7 @@ class Patient < ApplicationRecord
   has_many :medical_records, dependent: :destroy
   has_many :prescriptions, dependent: :destroy
   has_many :iot_readings, dependent: :destroy
+  belongs_to :doctor, optional: true
 
   validates :nhs_number, presence: true, uniqueness: true, length: { is: 10 }
   validates :date_of_birth, presence: true

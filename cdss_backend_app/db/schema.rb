@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_08_23_141131) do
+ActiveRecord::Schema[7.2].define(version: 2025_09_07_154538) do
   create_table "active_admin_comments", force: :cascade do |t|
     t.string "namespace"
     t.text "body"
@@ -49,6 +49,17 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_23_141131) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_audit_logs_on_user_id"
+  end
+
+  create_table "doctors", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "specialty"
+    t.string "phone_number"
+    t.string "email", null: false
+    t.text "address"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_doctors_on_email", unique: true
   end
 
   create_table "drug_interactions", force: :cascade do |t|
@@ -132,6 +143,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_23_141131) do
     t.text "allergies"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "doctor_id"
+    t.index ["doctor_id"], name: "index_patients_on_doctor_id"
     t.index ["nhs_number"], name: "index_patients_on_nhs_number", unique: true
     t.index ["user_id"], name: "index_patients_on_user_id"
   end
@@ -187,6 +200,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_23_141131) do
   add_foreign_key "medical_records", "patients"
   add_foreign_key "patient_assignments", "patients"
   add_foreign_key "patient_assignments", "users"
+  add_foreign_key "patients", "doctors"
   add_foreign_key "patients", "users"
   add_foreign_key "prescription_drugs", "drugs"
   add_foreign_key "prescription_drugs", "prescriptions"

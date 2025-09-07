@@ -6,7 +6,10 @@ class AdminUser < ApplicationRecord
 
   # Ransack searchable attributes
   def self.ransackable_attributes(auth_object = nil)
-    ["created_at", "email", "encrypted_password", "id", "id_value", "remember_created_at", "reset_password_sent_at", "reset_password_token", "updated_at"]
+    # ["created_at", "email", "id", "updated_at"]
+    ["created_at", "email", "id", "updated_at", "reset_password_token_cont", "reset_password_token_eq", "reset_password_token_start"]
+
+    # EXCLUDE: encrypted_password, reset_password_token, etc.
   end
 
   def self.ransackable_associations(auth_object = nil)
