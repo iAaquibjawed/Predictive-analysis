@@ -18,6 +18,37 @@ class User < ApplicationRecord
 
   validates :first_name, :last_name, presence: true
 
+  # DeviseTokenAuth validations
+  validates :provider, presence: true, unless: :email_required?
+  validates :uid, presence: true, unless: :email_required?
+  validates :email, presence: true, if: :email_required?
+
+  # DeviseTokenAuth callbacks
+  before_validation :set_uid, on: :create
+  before_validation :set_provider, on: :create
+
+  # Auto-confirm users created through ActiveAdmin
+  before_create :confirm_user_if_admin_created
+
+  # Custom setter to handle string role values from forms
+  def role=(value)
+    if value.is_a?(String) && value.match?(/^\d+$/)
+      # Convert string number to symbol
+      role_mapping = { '0' => :patient, '1' => :doctor, '2' => :pharmacist, '3' => :admin }
+      mapped_role = role_mapping[value]
+      if mapped_role
+        super(mapped_role)
+      else
+        super(value)
+      end
+    elsif value.is_a?(String) && !value.match?(/^\d+$/)
+      # Handle string role names (e.g., "patient", "doctor")
+      super(value.to_sym)
+    else
+      super(value)
+    end
+  end
+
   scope :active, -> { where(active: true) }
   scope :by_role, ->(role) { where(role: role) }
   scope :doctors, -> { where(role: :doctor) }
@@ -60,5 +91,26 @@ class User < ApplicationRecord
       role: role,
       active: active
     }
+  end
+
+  private
+
+  def email_required?
+    provider == 'email'
+  end
+
+  def set_uid
+    self.uid = email if uid.blank? && email.present?
+  end
+
+  def set_provider
+    self.provider = 'email' if provider.blank?
+  end
+
+  def confirm_user_if_admin_created
+    # Auto-confirm users created through ActiveAdmin
+    if defined?(ActiveAdmin) && Thread.current[:active_admin_creating_user]
+      self.confirmed_at = Time.current
+    end
   end
 end

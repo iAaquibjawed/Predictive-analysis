@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_09_07_154538) do
+ActiveRecord::Schema[7.2].define(version: 2025_09_11_073748) do
   create_table "active_admin_comments", force: :cascade do |t|
     t.string "namespace"
     t.text "body"
@@ -186,8 +186,22 @@ ActiveRecord::Schema[7.2].define(version: 2025_09_07_154538) do
     t.string "license_number"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "provider"
+    t.string "uid"
+    t.text "tokens"
+    t.datetime "confirmed_at"
+    t.string "confirmation_token"
+    t.datetime "confirmation_sent_at"
+    t.string "unconfirmed_email"
+    t.integer "sign_in_count"
+    t.datetime "current_sign_in_at"
+    t.datetime "last_sign_in_at"
+    t.string "current_sign_in_ip"
+    t.string "last_sign_in_ip"
     t.index ["active"], name: "index_users_on_active"
+    t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["provider", "uid"], name: "index_users_on_provider_and_uid", unique: true
     t.index ["role"], name: "index_users_on_role"
   end
 

@@ -2,13 +2,13 @@ ActiveAdmin.register User do
   menu parent: "User Management", priority: 1
 
   permit_params :email, :first_name, :last_name, :role, :active, :phone_number,
-                :specialization, :license_number
+                :specialization, :license_number, :password, :password_confirmation
 
   # Filters
   filter :email
   filter :first_name
   filter :last_name
-  filter :role, as: :select, collection: User.roles
+  filter :role, as: :select, collection: User.roles.map { |key, value| [key.humanize, key] }
   filter :active
   filter :created_at
 
@@ -89,13 +89,29 @@ ActiveAdmin.register User do
       f.input :email
       f.input :first_name
       f.input :last_name
-      f.input :role, as: :select, collection: User.roles
+      f.input :role, as: :select, collection: User.roles.map { |key, value| [key.humanize, key] }
       f.input :active
       f.input :phone_number
       f.input :specialization, hint: "For doctors and pharmacists"
       f.input :license_number, hint: "Professional license number"
     end
+
+    f.inputs "Password (leave blank to generate random password)" do
+      f.input :password
+      f.input :password_confirmation
+    end
+
     f.actions
+  end
+
+  # Controller configuration
+  controller do
+    def create
+      Thread.current[:active_admin_creating_user] = true
+      super
+    ensure
+      Thread.current[:active_admin_creating_user] = false
+    end
   end
 
   # Batch actions
