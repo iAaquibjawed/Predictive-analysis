@@ -108,9 +108,14 @@ class User < ApplicationRecord
   end
 
   def confirm_user_if_admin_created
-    # Auto-confirm users created through ActiveAdmin
-    if defined?(ActiveAdmin) && Thread.current[:active_admin_creating_user]
+    # Auto-confirm users created through ActiveAdmin or in development
+    if (defined?(ActiveAdmin) && Thread.current[:active_admin_creating_user]) || Rails.env.development?
       self.confirmed_at = Time.current
     end
+  end
+
+  # Skip email confirmation requirement in development
+  def confirmation_required?
+    !Rails.env.development?
   end
 end

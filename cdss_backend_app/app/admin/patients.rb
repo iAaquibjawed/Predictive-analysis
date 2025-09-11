@@ -3,7 +3,7 @@ ActiveAdmin.register Patient do
 
   permit_params :nhs_number, :date_of_birth, :gender, :address, :phone_number,
                 :emergency_contact, :medical_history, :allergies, :doctor_id,
-                patient: [:id, :first_name, :last_name, :email]
+                user_attributes: [:id, :first_name, :last_name, :email, :password, :password_confirmation, :role]
 
   # Scopes for filtering
   scope :all, default: true
@@ -123,6 +123,7 @@ ActiveAdmin.register Patient do
           user_form.input :first_name, required: true
           user_form.input :last_name, required: true
           user_form.input :email, required: true
+          user_form.input :role, as: :hidden, input_html: { value: 'patient' }
         end
       end
       f.input :doctor, as: :select, collection: Doctor.all.collect { |d| [d.name, d.id] }, include_blank: "Unassigned"
@@ -141,6 +142,16 @@ ActiveAdmin.register Patient do
     end
 
     f.actions
+  end
+
+  # Controller configuration
+  controller do
+    def create
+      Thread.current[:active_admin_creating_user] = true
+      super
+    ensure
+      Thread.current[:active_admin_creating_user] = false
+    end
   end
 
   # Custom actions

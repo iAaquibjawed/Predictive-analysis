@@ -23,4 +23,14 @@ ActiveAdmin.register AdminUser do
     end
     f.actions
   end
+
+  # Controller configuration
+  controller do
+    def create
+      Thread.current[:active_admin_creating_admin_user] = true
+      super
+    ensure
+      Thread.current[:active_admin_creating_admin_user] = false
+    end
+  end
 end
